@@ -136,7 +136,7 @@ static ngx_command_t  ngx_core_commands[] = {
       ngx_null_command
 };
 
-
+//core module context obj
 static ngx_core_module_t  ngx_core_module_ctx = {
     ngx_string("core"),
     ngx_core_module_create_conf,
@@ -264,7 +264,7 @@ main(int argc, char *const *argv)
     for (i = 0; ngx_modules[i]; i++) {
         ngx_modules[i]->index = ngx_max_module++;
     }
-
+	//init cycle: import!!!
     cycle = ngx_init_cycle(&init_cycle);
     if (cycle == NULL) {
         if (ngx_test_config) {
@@ -304,7 +304,7 @@ main(int argc, char *const *argv)
     if (ngx_signal) {
         return ngx_signal_process(cycle, ngx_signal);
     }
-
+	//print os version info to log
     ngx_os_status(cycle->log);
 
     ngx_cycle = cycle;
@@ -334,7 +334,7 @@ main(int argc, char *const *argv)
     }
 
 #endif
-
+	//create pid file
     if (ngx_create_pidfile(&ccf->pid, cycle->log) != NGX_OK) {
         return 1;
     }

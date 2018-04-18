@@ -433,7 +433,7 @@ typedef struct {
 
     ngx_msec_t    accept_mutex_delay;
 
-    u_char       *name;
+    u_char       *name;//event module name: epoll/select/poll
 
 #if (NGX_DEBUG)
     ngx_array_t   debug_connection;

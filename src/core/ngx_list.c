@@ -26,7 +26,7 @@ ngx_list_create(ngx_pool_t *pool, ngx_uint_t n, size_t size)
     return list;
 }
 
-
+/*push a new ngx_list_part_t to ngx_list_t, return the start address just allocated*/
 void *
 ngx_list_push(ngx_list_t *l)
 {

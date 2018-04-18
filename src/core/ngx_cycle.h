@@ -53,7 +53,7 @@ struct ngx_cycle_s {
     ngx_array_t               listening;
     ngx_array_t               paths;
     ngx_array_t               config_dump;
-    ngx_list_t                open_files;
+    ngx_list_t                open_files;//store the error.log, access log file location
     ngx_list_t                shared_memory;
 
     ngx_uint_t                connection_n;

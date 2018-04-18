@@ -24,7 +24,7 @@ typedef DWORD               ngx_pid_t;
 typedef struct {
     HANDLE                  handle;
     ngx_pid_t               pid;
-    char                   *name;
+    char                   *name;//process name
 
     HANDLE                  term;
     HANDLE                  quit;

@@ -23,8 +23,8 @@ ngx_create_pool(size_t size, ngx_log_t *log)
         return NULL;
     }
 
-    p->d.last = (u_char *) p + sizeof(ngx_pool_t);
-    p->d.end = (u_char *) p + size;
+    p->d.last = (u_char *) p + sizeof(ngx_pool_t);  //point to the end of current element
+    p->d.end = (u_char *) p + size;  //point to the end of memory block that just allcated
     p->d.next = NULL;
     p->d.failed = 0;
 

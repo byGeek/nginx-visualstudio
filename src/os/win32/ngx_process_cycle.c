@@ -82,7 +82,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     ngx_console_init(cycle);
 
     SetEnvironmentVariable("ngx_unique", ngx_unique);
-
+	//create manual reset event object
     ngx_master_process_event = CreateEvent(NULL, 1, 0,
                                            ngx_master_process_event_name);
     if (ngx_master_process_event == NULL) {
@@ -91,7 +91,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
                       ngx_master_process_event_name);
         exit(2);
     }
-
+	//create manual reset event: stop/reload/quit...
     if (ngx_create_signal_events(cycle) != NGX_OK) {
         exit(2);
     }
@@ -114,17 +114,17 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     events[3] = ngx_reload_event;
 
     ngx_close_listening_sockets(cycle);
-
+	//start worker process
     if (ngx_start_worker_processes(cycle, NGX_PROCESS_RESPAWN) == 0) {
         exit(2);
     }
 
     timer = 0;
     timeout = INFINITE;
-
+	//master process cycle: wait for events(stop/quit/reopen/reload)
     for ( ;; ) {
 
-        nev = 4;
+        nev = 4;//number of events, number of wait objects
         for (n = 0; n < ngx_last_process; n++) {
             if (ngx_processes[n].handle) {
                 events[nev++] = ngx_processes[n].handle;
@@ -135,7 +135,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
             timeout = timer > ngx_current_msec ? timer - ngx_current_msec : 0;
         }
 
-        ev = WaitForMultipleObjects(nev, events, 0, timeout);
+        ev = WaitForMultipleObjects(nev, events, 0, timeout);//WaitForMultipleObjects return the array index of the events
 
         err = ngx_errno;
         ngx_time_update();
@@ -143,7 +143,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
         ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
                        "master WaitForMultipleObjects: %ul", ev);
 
-        if (ev == WAIT_OBJECT_0) {
+        if (ev == WAIT_OBJECT_0) {//reveived stop signal
             ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "exiting");
 
             if (ResetEvent(ngx_stop_event) == 0) {
@@ -318,7 +318,7 @@ ngx_create_signal_events(ngx_cycle_t *cycle)
 {
     ngx_sprintf((u_char *) ngx_stop_event_name,
                 "Global\\ngx_stop_%s%Z", ngx_unique);
-
+	//create manual reset event: stop event
     ngx_stop_event = CreateEvent(NULL, 1, 0, ngx_stop_event_name);
     if (ngx_stop_event == NULL) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
@@ -372,7 +372,7 @@ ngx_start_worker_processes(ngx_cycle_t *cycle, ngx_int_t type)
     ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "start worker processes");
 
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
-
+	//start worker process
     for (n = 0; n < ccf->worker_processes; n++) {
         if (ngx_spawn_process(cycle, "worker", type) == NGX_INVALID_PID) {
             break;
@@ -426,7 +426,7 @@ ngx_quit_worker_processes(ngx_cycle_t *cycle, ngx_uint_t old)
         if (ngx_processes[n].handle == NULL) {
             continue;
         }
-
+		//quit process
         if (SetEvent(ngx_processes[n].quit) == 0) {
             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
                           "SetEvent(\"%s\") failed",
@@ -476,7 +476,7 @@ ngx_reap_worker(ngx_cycle_t *cycle, HANDLE h)
         if (ngx_processes[n].handle != h) {
             continue;
         }
-
+		//GetExitCodeProces: Retrieves the termination status of the specified process.
         if (GetExitCodeProcess(h, &code) == 0) {
             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
                           "GetExitCodeProcess(%P) failed",
@@ -552,7 +552,7 @@ ngx_master_process_exit(ngx_cycle_t *cycle)
     ngx_close_handle(ngx_master_process_event);
 
     ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "exit");
-
+	//call exit_master function hook
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->exit_master) {
             ngx_modules[i]->exit_master(cycle);

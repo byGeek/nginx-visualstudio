@@ -44,7 +44,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
             return NGX_INVALID_PID;
         }
     }
-
+	//get the full name of the current process exe
     n = GetModuleFileName(NULL, file, MAX_PATH);
 
     if (n == 0) {
@@ -60,11 +60,11 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
 
     ctx.path = file;
     ctx.name = name;
-    ctx.args = GetCommandLine();
+    ctx.args = GetCommandLine();//get command line args
     ctx.argv = NULL;
     ctx.envp = NULL;
 
-    pid = ngx_execute(cycle, &ctx);
+    pid = ngx_execute(cycle, &ctx);//create process and return the newly created process id
 
     if (pid == NGX_INVALID_PID) {
         return pid;
@@ -72,7 +72,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
 
     ngx_memzero(&ngx_processes[s], sizeof(ngx_process_t));
 
-    ngx_processes[s].handle = ctx.child;
+    ngx_processes[s].handle = ctx.child;//ctx.child is the hProcess pointer to the newly created process
     ngx_processes[s].pid = pid;
     ngx_processes[s].name = name;
 
@@ -83,9 +83,9 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
 
     events[0] = ngx_master_process_event;
     events[1] = ctx.child;
-
-    rc = WaitForMultipleObjects(2, events, 0, 5000);
-
+	//https://msdn.microsoft.com/en-us/library/windows/desktop/ms687025(v=vs.85).aspx
+    rc = WaitForMultipleObjects(2, events, 0, 5000);//Waits until one or all of the specified objects are in the signaled state or the time-out interval elapses.
+	//how does the ngx_master_process_event get signaled??
     ngx_time_update();
 
     ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
@@ -94,7 +94,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
     switch (rc) {
 
     case WAIT_OBJECT_0:
-
+		//OpenEvent: Opens an existing named event object.
         ngx_processes[s].term = OpenEvent(EVENT_MODIFY_STATE, 0,
                                           (char *) ngx_processes[s].term_event);
         if (ngx_processes[s].term == NULL) {
@@ -103,7 +103,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
                           ngx_processes[s].term_event);
             goto failed;
         }
-
+		
         ngx_processes[s].quit = OpenEvent(EVENT_MODIFY_STATE, 0,
                                           (char *) ngx_processes[s].quit_event);
         if (ngx_processes[s].quit == NULL) {
@@ -121,7 +121,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
                           ngx_processes[s].reopen_event);
             goto failed;
         }
-
+		//ResetEvent: Sets the specified event object to the nonsignaled state.
         if (ResetEvent(ngx_master_process_event) == 0) {
             ngx_log_error(NGX_LOG_ALERT, cycle->log, 0,
                           "ResetEvent(\"%s\") failed",
@@ -202,7 +202,7 @@ failed:
     return NGX_INVALID_PID;
 }
 
-
+/*create process*/
 ngx_pid_t
 ngx_execute(ngx_cycle_t *cycle, ngx_exec_ctx_t *ctx)
 {

@@ -60,7 +60,7 @@ extern ngx_int_t    ngx_max_sockets;
 extern ngx_uint_t   ngx_inherited_nonblocking;
 extern ngx_uint_t   ngx_tcp_nodelay_and_tcp_nopush;
 extern ngx_uint_t   ngx_win32_version;
-extern char         ngx_unique[];
+extern char         ngx_unique[];//nginx process id
 
 
 #endif /* _NGX_OS_H_INCLUDED_ */

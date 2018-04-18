@@ -14,10 +14,10 @@
 
 
 typedef struct {
-    void        *elts;
-    ngx_uint_t   nelts;
-    size_t       size;
-    ngx_uint_t   nalloc;
+    void        *elts;  //elements
+    ngx_uint_t   nelts; //number of elements
+    size_t       size;  //max size of an element
+    ngx_uint_t   nalloc; //the number of memory block allocated
     ngx_pool_t  *pool;
 } ngx_array_t;
 

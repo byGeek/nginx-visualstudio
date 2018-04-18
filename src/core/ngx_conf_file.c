@@ -204,7 +204,7 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
 
 
     for ( ;; ) {
-        rc = ngx_conf_read_token(cf);
+        rc = ngx_conf_read_token(cf);  //read one valid line, example: worker_processes 1; and save it to cf.args
 
         /*
          * ngx_conf_read_token() may return
@@ -253,7 +253,7 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
 
         /* rc == NGX_OK || rc == NGX_CONF_BLOCK_START */
 
-        if (cf->handler) {
+        if (cf->handler) { //if handler is hooked with some actual function
 
             /*
              * the custom handler, i.e., that is used in the http's
@@ -315,7 +315,7 @@ done:
     return NGX_CONF_OK;
 }
 
-
+/* get config directive and execute callback function */
 static ngx_int_t
 ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
 {
@@ -328,7 +328,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
     name = cf->args->elts;
 
     found = 0;
-
+	//foreach ngx_modules to find the setting string, if matched, then set
     for (i = 0; ngx_modules[i]; i++) {
 
         cmd = ngx_modules[i]->commands;
@@ -342,7 +342,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
                 continue;
             }
 
-            if (ngx_strcmp(name->data, cmd->name.data) != 0) {
+            if (ngx_strcmp(name->data, cmd->name.data) != 0) {  //compare with pre-defined command, see predefined command in nginx.c
                 continue;
             }
 
@@ -410,10 +410,10 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
 
             conf = NULL;
 
-            if (cmd->type & NGX_DIRECT_CONF) {
+            if (cmd->type & NGX_DIRECT_CONF) {  //simple directive, example: daemon off
                 conf = ((void **) cf->ctx)[ngx_modules[i]->index];
 
-            } else if (cmd->type & NGX_MAIN_CONF) {
+            } else if (cmd->type & NGX_MAIN_CONF) {  //main block conf, example: events {...}
                 conf = &(((void **) cf->ctx)[ngx_modules[i]->index]);
 
             } else if (cf->ctx) {
@@ -424,7 +424,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
                 }
             }
 
-            rv = cmd->set(cf, cmd, conf);
+            rv = cmd->set(cf, cmd, conf);  //callback function set: hooked in nginx.c
 
             if (rv == NGX_CONF_OK) {
                 return NGX_OK;
@@ -716,7 +716,7 @@ ngx_conf_read_token(ngx_conf_t *cf)
             }
 
             if (found) {
-                word = ngx_array_push(cf->args);
+                word = ngx_array_push(cf->args);  //save the param to cf->args->elts
                 if (word == NULL) {
                     return NGX_ERROR;
                 }

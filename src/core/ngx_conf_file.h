@@ -156,7 +156,7 @@ typedef struct {
     ngx_buf_t            *buffer;
 } ngx_conf_dump_t;
 
-
+//define a function pointer
 typedef char *(*ngx_conf_handler_pt)(ngx_conf_t *cf,
     ngx_command_t *dummy, void *conf);
 
@@ -175,7 +175,7 @@ struct ngx_conf_s {
     ngx_uint_t            module_type;
     ngx_uint_t            cmd_type;
 
-    ngx_conf_handler_pt   handler;
+    ngx_conf_handler_pt   handler;  //function pointer
     char                 *handler_conf;
 };
 
